@@ -18,8 +18,11 @@ function loadFromLS(key) {
     }
 }
 
+let formData = new FormData(form);
+
 form.addEventListener("input", () => {
-    const formData = new FormData(form)
+    formData.set('email', email.value)
+    formData.set('message', message.value)
 
     const values = {
         email: formData.get('email'),
@@ -34,11 +37,23 @@ const savedData = loadFromLS(localStorageKey);
 if (savedData) {
     email.value = savedData.email || "";
     message.value = savedData.message || "";
+    formData.set('email', email.value);
+    formData.set('message', message.value);
 }
 
 
 form.addEventListener("submit", (e) => {
     e.preventDefault();
+
+    if (!email.value || !message.value) {
+        return alert("Fill all fields!");
+    }
+
+    console.log({
+        email: email.value,
+        message: message.value,
+    });
+    
     localStorage.removeItem(localStorageKey);
     form.reset();
 })
