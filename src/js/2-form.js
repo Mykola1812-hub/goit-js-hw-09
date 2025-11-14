@@ -1,59 +1,70 @@
-const form = document.querySelector(".feedback-form");
-const email = form.elements.email;
-const message = form.elements.message;
-const localStorageKey = "input-elements";
+const form = document.querySelector('.feedback-form');
+const emailInput = form.elements.email;
+const messageInput = form.elements.message;
+const localStorageKey = 'input-elements';
+
+
+const formData = {
+  email: '',
+  message: '',
+};
 
 function saveToLS(key, value) {
-    const zip = JSON.stringify(value);
-    const item = localStorage.setItem(key, zip);
+  const zip = JSON.stringify(value);
+  localStorage.setItem(key, zip);
 }
 
 function loadFromLS(key) {
-    const zip = localStorage.getItem(key);
+  const zip = localStorage.getItem(key);
+  if (!zip) return null;
 
-    try {
-        return JSON.parse(zip);
-    } catch (error) {
-      return zip;
-    }
+  try {
+    return JSON.parse(zip);
+  } catch (error) {
+    return null;
+  }
 }
 
-let formData = new FormData(form);
+function initForm() {
+  const savedData = loadFromLS(localStorageKey);
 
-form.addEventListener("input", () => {
-    formData.set('email', email.value)
-    formData.set('message', message.value)
+  if (savedData) {
+    formData.email = savedData.email || '';
+    formData.message = savedData.message || '';
+  } else {
+    formData.email = '';
+    formData.message = '';
+  }
 
-    const values = {
-        email: formData.get('email'),
-        message: formData.get('message'),
-    }
+  emailInput.value = formData.email;
+  messageInput.value = formData.message;
+};
 
-    saveToLS(localStorageKey, values);
-})
+initForm();
 
+form.addEventListener('input', (e) => {
+  const { name, value } = e.target;
 
-const savedData = loadFromLS(localStorageKey);
-if (savedData) {
-    email.value = savedData.email || "";
-    message.value = savedData.message || "";
-    formData.set('email', email.value);
-    formData.set('message', message.value);
-}
+  if (name !== 'email' && name !== 'message') return;
 
+  formData[name] = value;
+  saveToLS(localStorageKey, formData);
+});
 
-form.addEventListener("submit", (e) => {
-    e.preventDefault();
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
 
-    if (!email.value || !message.value) {
-        return alert("Fill all fields!");
-    }
+  if (!formData.email.trim() || !formData.message.trim()) {
+    alert('Fill all fields!');
+    return;
+  }
 
-    console.log({
-        email: email.value,
-        message: message.value,
-    });
-    
-    localStorage.removeItem(localStorageKey);
-    form.reset();
-})
+  console.log({ ...formData });
+
+  localStorage.removeItem(localStorageKey);
+
+  formData.email = '';
+  formData.message = '';
+
+  form.reset();
+});
